@@ -18,12 +18,13 @@
       <nav class="nav-links">
         <a class="active" href="#top">Beranda</a><a href="#cara-kerja">Cara Kerja</a><a href="#rooms">Cari Room</a><a href="#fitur">Fitur</a>
       </nav>
-      <div class="nav-actions"><a class="login" href="#daftar">Masuk</a><a class="button button-small" href="#daftar">Gabung gratis <b>↗</b></a></div>
+       <div class="nav-actions"><a class="login" href="#login">Masuk</a><a class="button button-small" href="#login">Gabung gratis <b>↗</b></a></div>
     </div>
   </header>
 
   <main id="top">
-    <section class="hero">
+     <div class="home-content">
+     <section class="hero">
       <div class="hero-shape shape-one"></div><div class="hero-shape shape-two"></div>
       <div class="container hero-grid">
         <div class="hero-copy"><div class="eyebrow light"><i></i> Komunitas badminton Indonesia</div>
@@ -44,7 +45,38 @@
 
     <section class="section rooms" id="rooms"><div class="container"><div class="section-heading"><div><div class="eyebrow">Room di dekatmu</div><h2>Siap main minggu ini?</h2></div><a class="arrow-link" href="#rooms">Lihat semua room ↗</a></div><div class="room-grid">{% for room in rooms %}<article class="room-card"><div class="room-image {{ room.tone }}"><span class="court-label">BADMIMATE<br><b>OPEN PLAY</b></span><span class="level-pill">{{ room.level }}</span></div><div class="room-content"><h3>{{ room.title }}</h3><p>📍 {{ room.place }}</p><div class="room-meta"><span>◷ {{ room.date }}<br><small>{{ room.time }}</small></span><strong>{{ room.price }}<small>/orang</small></strong></div><div class="room-footer"><span class="mini-avatars">● ● ●</span><span class="slots">{{ room.slots }}</span><a href="#daftar">Gabung ↗</a></div></div></article>{% endfor %}</div></div></section>
 
-    <section class="section cta" id="daftar"><div class="container cta-inner"><div><div class="eyebrow">Giliran kamu untuk mulai</div><h2>Satu match bisa jadi<br><span>awal cerita baru.</span></h2></div><a class="button" href="#top">Buat profil gratis <b>↗</b></a></div></section>
+     <section class="section cta" id="daftar"><div class="container cta-inner"><div><div class="eyebrow">Giliran kamu untuk mulai</div><h2>Satu match bisa jadi<br><span>awal cerita baru.</span></h2></div><a class="button" href="#login">Buat profil gratis <b>↗</b></a></div></section>
+     </div>
+
+     <section class="auth-page" id="login">
+       <div class="auth-card">
+         <a class="auth-back" href="#top">← Kembali ke beranda</a>
+         <div class="auth-brand"><span class="brand-mark">●</span> badmi<span>mate</span></div>
+         <h1>Mulai bermain bersama</h1>
+         <p class="auth-subtitle">Masuk atau buat akun untuk menemukan teman main yang cocok.</p>
+         {% with messages = get_flashed_messages(with_categories=true) %}
+           {% for category, message in messages %}<div class="auth-message {{ category }}">{{ message }}</div>{% endfor %}
+         {% endwith %}
+         <div class="auth-tabs"><button type="button" class="auth-tab active" data-auth-tab="login">Masuk</button><button type="button" class="auth-tab" data-auth-tab="register">Daftar</button></div>
+         <form class="auth-form" id="login-form" method="post" action="{{ url_for('login') }}">
+           <label>Email<input type="email" name="email" placeholder="nama@email.com" required></label>
+           <label>Password<input type="password" name="password" placeholder="Masukkan password" required></label>
+           <button class="button auth-submit" type="submit">Masuk</button>
+           <div class="auth-divider"><span>atau</span></div>
+           <button class="google-button" type="button" id="google-login"><strong>G</strong> Masuk dengan Google</button>
+           <p class="auth-switch">Belum punya akun? <button type="button" data-auth-tab="register">Daftar sekarang</button></p>
+         </form>
+         <form class="auth-form hidden" id="register-form" method="post" action="{{ url_for('register') }}">
+           <label>Nama lengkap<input type="text" name="full_name" placeholder="Nama lengkap Anda" required></label>
+           <label>Email<input type="email" name="email" placeholder="nama@email.com" required></label>
+           <label>Nomor HP<input type="tel" name="phone" placeholder="08xxxxxxxxxx" required></label>
+           <label>Password<input type="password" name="password" placeholder="Buat password" minlength="6" required></label>
+           <label>Konfirmasi password<input type="password" name="confirmation" placeholder="Ulangi password" minlength="6" required></label>
+           <button class="button auth-submit" type="submit">Daftar</button>
+           <p class="auth-switch">Sudah punya akun? <button type="button" data-auth-tab="login">Masuk</button></p>
+         </form>
+       </div>
+     </section>
   </main>
   <footer><div class="container footer-inner"><a class="brand" href="#top"><span class="brand-mark">●</span> badmi<span>mate</span></a><p>Teman main yang tepat, permainan yang lebih hebat.</p><span>© 2026 Badmimate</span></div></footer>
   <script src="{{ url_for('static', filename='script.js') }}"></script>

@@ -1,6 +1,64 @@
-from flask import Flask, render_template
+import sqlite3
+import json
+from pathlib import Path
+from datetime import datetime
+
+from flask import Flask, flash, redirect, render_template, request, session, url_for
 
 app = Flask(__name__)
+app.secret_key = "badmimate-development-key"
+DATABASE = Path(__file__).with_name("badmimate.db")
+
+
+def init_database():
+    with sqlite3.connect(DATABASE) as connection:
+        connection.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                full_name TEXT NOT NULL,
+                email TEXT NOT NULL UNIQUE,
+                phone TEXT NOT NULL,
+                password TEXT NOT NULL
+            )
+        """)
+        connection.execute("""
+            CREATE TABLE IF NOT EXISTS profiles (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL UNIQUE,
+                level TEXT NOT NULL,
+                score REAL NOT NULL,
+                assessment TEXT NOT NULL,
+                completed_at TEXT NOT NULL,
+                FOREIGN KEY (user_id) REFERENCES users(id)
+            )
+        """)
+        connection.execute("""
+            CREATE TABLE IF NOT EXISTS match_history (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                opponent TEXT NOT NULL,
+                venue TEXT NOT NULL,
+                played_at TEXT NOT NULL,
+                result TEXT NOT NULL,
+                score TEXT NOT NULL,
+                FOREIGN KEY (user_id) REFERENCES users(id)
+            )
+        """)
+        connection.execute("""
+            CREATE TABLE IF NOT EXISTS received_ratings (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                reviewer TEXT NOT NULL,
+                aspect TEXT NOT NULL,
+                stars INTEGER NOT NULL,
+                review TEXT,
+                created_at TEXT NOT NULL,
+                FOREIGN KEY (user_id) REFERENCES users(id)
+            )
+        """)
+
+
+init_database()
 
 
 @app.route("/")
@@ -11,6 +69,145 @@ def index():
         {"title": "Sparring Kompetitif", "place": "Prima Badminton, Depok", "date": "Minggu, 23 Nov", "time": "16.00–18.00", "level": "Jago", "price": "Rp45k", "slots": "1 slot tersisa", "tone": "orange"},
     ]
     return render_template("index.html", rooms=rooms)
+
+
+@app.post("/register")
+def register():
+    full_name = request.form.get("full_name", "").strip()
+    email = request.form.get("email", "").strip().lower()
+    phone = request.form.get("phone", "").strip()
+    password = request.form.get("password", "")
+    confirmation = request.form.get("confirmation", "")
+
+    if not all((full_name, email, phone, password, confirmation)):
+        flash("Semua data pendaftaran wajib diisi.", "error")
+    elif password != confirmation:
+        flash("Konfirmasi password tidak sama.", "error")
+    else:
+        try:
+            with sqlite3.connect(DATABASE) as connection:
+                connection.execute(
+                    "INSERT INTO users (full_name, email, phone, password) VALUES (?, ?, ?, ?)",
+                    (full_name, email, phone, password),
+                )
+            flash("Pendaftaran berhasil. Silakan masuk dengan akun Anda.", "success")
+        except sqlite3.IntegrityError:
+            flash("Email tersebut sudah terdaftar.", "error")
+
+    return redirect(url_for("index") + "#login")
+
+
+@app.post("/login")
+def login():
+    email = request.form.get("email", "").strip().lower()
+    password = request.form.get("password", "")
+
+    with sqlite3.connect(DATABASE) as connection:
+        user = connection.execute(
+            "SELECT id, full_name, password FROM users WHERE email = ?", (email,)
+        ).fetchone()
+
+    if user and user[2] == password:
+        session["user_id"] = user[0]
+        session["user_name"] = user[1]
+        flash(f"Selamat datang, {user[1]}!", "success")
+        return redirect(url_for("profile"))
+
+    flash("Email atau password salah.", "error")
+    return redirect(url_for("index") + "#login")
+
+
+def logged_in_user():
+    user_id = session.get("user_id")
+    if not user_id:
+        return None
+    with sqlite3.connect(DATABASE) as connection:
+        return connection.execute(
+            "SELECT id, full_name, email, phone FROM users WHERE id = ?", (user_id,)
+        ).fetchone()
+
+
+@app.route("/profile")
+def profile():
+    user = logged_in_user()
+    if not user:
+        flash("Silakan masuk terlebih dahulu.", "error")
+        return redirect(url_for("index") + "#login")
+
+    with sqlite3.connect(DATABASE) as connection:
+        profile_data = connection.execute(
+            "SELECT level, score, assessment, completed_at FROM profiles WHERE user_id = ?",
+            (user[0],),
+        ).fetchone()
+        matches = connection.execute(
+            "SELECT opponent, venue, played_at, result, score FROM match_history "
+            "WHERE user_id = ? ORDER BY id DESC", (user[0],)
+        ).fetchall()
+        ratings = connection.execute(
+            "SELECT reviewer, aspect, stars, review, created_at FROM received_ratings "
+            "WHERE user_id = ? ORDER BY id DESC", (user[0],)
+        ).fetchall()
+
+    assessment = json.loads(profile_data[2]) if profile_data else None
+    wins = sum(1 for match in matches if match[3] == "Menang")
+    losses = sum(1 for match in matches if match[3] == "Kalah")
+    return render_template(
+        "profile.html", user=user, profile_data=profile_data,
+        assessment=assessment, matches=matches, ratings=ratings,
+        wins=wins, losses=losses, section=request.args.get("section", "home"),
+    )
+
+
+@app.post("/profile/assessment")
+def save_assessment():
+    user = logged_in_user()
+    if not user:
+        return redirect(url_for("index") + "#login")
+
+    fields = [
+        "serve", "clear", "drop", "smash", "netting", "drive", "backhand",
+        "return_service", "footwork", "stamina", "agility", "experience",
+        "tactics", "sportsmanship", "enjoyment",
+    ]
+    try:
+        assessment = {field: int(request.form[field]) for field in fields}
+        if any(value < 1 or value > 5 for value in assessment.values()):
+            raise ValueError
+    except (KeyError, ValueError):
+        flash("Lengkapi semua penilaian dengan pilihan yang tersedia.", "error")
+        return redirect(url_for("profile"))
+
+    technique = sum(assessment[field] for field in fields[:8]) / 8
+    groups = {
+        "Teknik pukulan": technique,
+        "Footwork": assessment["footwork"],
+        "Kondisi fisik": (assessment["stamina"] + assessment["agility"]) / 2,
+        "Pengalaman bermain": assessment["experience"],
+        "Taktik": assessment["tactics"],
+        "Sikap di lapangan": (assessment["sportsmanship"] + assessment["enjoyment"]) / 2,
+    }
+    weights = {
+        "Teknik pukulan": 0.35, "Footwork": 0.15, "Kondisi fisik": 0.15,
+        "Pengalaman bermain": 0.15, "Taktik": 0.15, "Sikap di lapangan": 0.05,
+    }
+    score = round(sum(groups[name] * weights[name] for name in groups), 2)
+    level = "Pemula" if score < 2.5 else "Menengah" if score < 3.75 else "Jago"
+    saved_data = {"answers": assessment, "groups": groups, "weights": weights}
+
+    with sqlite3.connect(DATABASE) as connection:
+        connection.execute(
+            "INSERT OR REPLACE INTO profiles "
+            "(user_id, level, score, assessment, completed_at) VALUES (?, ?, ?, ?, ?)",
+            (user[0], level, score, json.dumps(saved_data), datetime.now().isoformat()),
+        )
+    flash("Penilaian awal berhasil disimpan. Selamat datang di profilmu!", "success")
+    return redirect(url_for("profile"))
+
+
+@app.get("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("index"))
 
 
 if __name__ == "__main__":

@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Profil — Badmimate</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='profile.css') }}">
+</head>
+<body class="profile-body">
+  {% if not profile_data %}
+  <main class="assessment-page">
+    <div class="assessment-card">
+      <a class="profile-brand" href="{{ url_for('index') }}"><span>●</span> badmi<span>mate</span></a>
+      <div class="assessment-progress"><i></i></div>
+      <p class="profile-eyebrow">Langkah pertama</p>
+      <h1>Kenali gaya mainmu</h1>
+      <p class="assessment-intro">Pilih deskripsi yang paling mendekati kemampuanmu. Tidak ada jawaban benar atau salah.</p>
+      {% with messages = get_flashed_messages(with_categories=true) %}{% for category, message in messages %}<div class="profile-message {{ category }}">{{ message }}</div>{% endfor %}{% endwith %}
+      <form method="post" action="{{ url_for('save_assessment') }}" class="assessment-form">
+        {% set questions = [
+          ('serve', 'Servis', ['Masih sering gagal melewati net', 'Bisa servis pendek dengan bantuan', 'Servis cukup konsisten ke area yang dituju', 'Bisa mengatur variasi servis dengan baik', 'Servis akurat, bervariasi, dan menyulitkan lawan']),
+          ('clear', 'Clear', ['Belum bisa mengirim shuttlecock ke belakang', 'Bisa clear tetapi tenaga dan arah belum stabil', 'Clear cukup jauh dan konsisten', 'Clear terarah untuk mengatur tempo permainan', 'Clear tajam, dalam, dan bisa membuka ruang serangan']),
+          ('drop', 'Drop shot', ['Belum menguasai pukulan drop shot', 'Bisa melakukan drop shot sesekali', 'Drop shot cukup halus dan terarah', 'Bisa menyamarkan drop shot dari posisi berbeda', 'Drop shot sangat presisi dekat garis net']),
+          ('smash', 'Smash', ['Belum percaya diri melakukan smash', 'Bisa smash tetapi arah dan tenaga belum stabil', 'Smash cukup keras dengan arah terkontrol', 'Bisa mengatur sudut dan variasi smash', 'Smash keras, tajam, dan konsisten menjadi senjata utama']),
+          ('netting', 'Netting', ['Sering menyangkut atau terlalu tinggi', 'Bisa netting dengan kontrol sederhana', 'Netting cukup rapat dan terarah', 'Bisa mengatur spin dan menekan lawan di depan net', 'Netting sangat halus, tipis, dan konsisten']),
+          ('drive', 'Drive', ['Belum nyaman dengan reli drive cepat', 'Bisa drive tetapi sering kehilangan kontrol', 'Drive cukup cepat dan stabil', 'Bisa mengubah arah drive untuk menekan lawan', 'Drive cepat, akurat, dan mampu menguasai reli']),
+          ('backhand', 'Backhand', ['Masih kesulitan memukul dengan backhand', 'Backhand bisa digunakan dalam situasi sederhana', 'Backhand cukup konsisten dari berbagai posisi', 'Backhand terarah dan bisa digunakan untuk bertahan/menyerang', 'Backhand kuat, akurat, dan tetap stabil di bawah tekanan']),
+          ('return_service', 'Return servis', ['Sering terlambat membaca arah servis', 'Bisa mengembalikan servis mudah', 'Return cukup konsisten ke area aman', 'Bisa mengarahkan return untuk mengambil inisiatif', 'Return tajam dan langsung memberi tekanan']),
+          ('footwork', 'Footwork', ['Sering terlambat mencapai shuttlecock', 'Mulai memahami posisi dasar lapangan', 'Pergerakan cukup cepat dan kembali ke posisi', 'Langkah efisien dan mampu menjangkau sudut lapangan', 'Footwork sangat ringan, cepat, dan selalu siap']),
+          ('stamina', 'Stamina', ['Cepat lelah dalam permainan singkat', 'Mampu bermain sebentar dengan jeda', 'Mampu menyelesaikan permainan normal', 'Stamina terjaga dalam reli dan pertandingan panjang', 'Sangat tahan bermain dengan intensitas tinggi']),
+          ('agility', 'Kelincahan', ['Sulit mengubah arah gerak', 'Bisa bergerak tetapi masih kaku', 'Cukup lincah mengikuti arah shuttlecock', 'Cepat berpindah dan menjaga keseimbangan', 'Sangat lincah, eksplosif, dan responsif']),
+          ('experience', 'Pengalaman bermain', ['Baru mulai belajar badminton', 'Pernah bermain sesekali bersama teman', 'Rutin bermain dan memahami aturan dasar', 'Sering bermain di komunitas atau turnamen kecil', 'Berpengalaman bertanding dan menghadapi banyak gaya lawan']),
+          ('tactics', 'Pemahaman taktik', ['Masih fokus mengembalikan shuttlecock saja', 'Mulai memahami area kosong lawan', 'Bisa mengatur pola serangan dan bertahan sederhana', 'Mampu membaca permainan dan mengubah strategi', 'Sangat memahami pola, tempo, posisi, dan kelemahan lawan']),
+          ('sportsmanship', 'Sportivitas', ['Masih perlu belajar aturan dan sikap pertandingan', 'Berusaha mengikuti aturan permainan', 'Menghargai keputusan dan lawan', 'Konsisten jujur, tenang, dan menghargai partner', 'Menjadi contoh sportivitas dan membantu suasana pertandingan']),
+          ('enjoyment', 'Keasyikan diajak main', ['Masih canggung berkomunikasi saat bermain', 'Mulai bisa mengikuti suasana permainan', 'Komunikatif dan nyaman diajak bermain', 'Suportif, adaptif, dan membuat partner berkembang', 'Sangat positif, menyenangkan, dan membangun suasana komunitas'])
+        ] %}
+        {% for key, title, options in questions %}
+        <fieldset class="question-card"><legend>{{ loop.index }}. {{ title }}</legend>{% for option in options %}<label><input type="radio" name="{{ key }}" value="{{ loop.index }}" required><span><b>{{ loop.index }}</b>{{ option }}</span></label>{% endfor %}</fieldset>
+        {% endfor %}
+        <button class="button assessment-submit" type="submit">Simpan penilaian & buka profil <b>↗</b></button>
+      </form>
+    </div>
+  </main>
+  {% else %}
+  <div class="profile-layout">
+    <aside class="profile-sidebar">
+      <a class="profile-brand" href="{{ url_for('index') }}"><span>●</span> badmi<span>mate</span></a>
+      <div class="profile-user"><div class="avatar">{{ user[1][:1].upper() }}</div><div><b>{{ user[1] }}</b><small>{{ profile_data[0] }}</small></div></div>
+      <nav class="profile-nav"><a class="{{ 'active' if section == 'home' else '' }}" href="{{ url_for('profile', section='home') }}">⌂ <span>Home</span></a><a class="{{ 'active' if section == 'rating' else '' }}" href="{{ url_for('profile', section='rating') }}">★ <span>Rating saya</span></a><a class="{{ 'active' if section == 'history' else '' }}" href="{{ url_for('profile', section='history') }}">◷ <span>Riwayat pertandingan</span></a></nav>
+      <a class="sidebar-logout" href="{{ url_for('logout') }}">↪ Keluar</a>
+    </aside>
+    <main class="profile-main">
+      <header class="profile-topbar"><div><p class="profile-eyebrow">Profil pemain</p><h1>Halo, {{ user[1].split()[0] }} 👋</h1></div><a class="button button-small" href="{{ url_for('index') }}">Cari room <b>↗</b></a></header>
+      {% with messages = get_flashed_messages(with_categories=true) %}{% for category, message in messages %}<div class="profile-message {{ category }}">{{ message }}</div>{% endfor %}{% endwith %}
+      {% if section == 'home' %}
+      <section class="profile-hero"><div><p class="profile-eyebrow">Level kamu saat ini</p><h2>{{ profile_data[0] }}</h2><p>Terus bermain dan kumpulkan penilaian dari partner untuk membuat levelmu semakin akurat.</p></div><div class="level-score"><strong>{{ profile_data[1] }}</strong><span>/ 5.00</span><small>skor awal</small></div></section>
+      <div class="stat-grid"><article><span>🏆</span><b>{{ wins }}</b><small>Menang</small></article><article><span>🎯</span><b>{{ losses }}</b><small>Kalah</small></article><article><span>★</span><b>{{ ratings|length }}</b><small>Penilaian diterima</small></article><article><span>⚡</span><b>{{ '%.0f'|format(profile_data[1] / 5 * 100) }}%</b><small>Progress level</small></article></div>
+      <section class="profile-panel"><div class="panel-heading"><div><p class="profile-eyebrow">Ringkasan kemampuan</p><h2>Hasil penilaian diri</h2></div><a href="{{ url_for('profile', section='rating') }}">Lihat detail →</a></div>{% for name, value in assessment.groups.items() %}<div class="skill-row"><span>{{ name }}</span><div class="skill-bar"><i style="width: {{ value / 5 * 100 }}%"></i></div><b>{{ '%.1f'|format(value) }}</b></div>{% endfor %}</section>
+      {% elif section == 'rating' %}
+      <section class="page-heading"><p class="profile-eyebrow">Rating saya</p><h2>Detail kemampuan bermain</h2><p>Penilaian diri menjadi dasar awal. Rating dari pemain yang benar-benar bermain bersama akan membuat hasil ini semakin akurat.</p></section>
+      <section class="profile-panel"><div class="rating-summary"><div class="big-rating">{{ profile_data[1] }}<small>/5</small><span>Level {{ profile_data[0] }}</span></div><div class="rating-note">Saat ini pengaruh penilaian diri masih dominan. Setelah kamu bermain bersama pemain lain, rating mereka akan ditambahkan per aspek.</div></div>{% for name, value in assessment.groups.items() %}<div class="skill-row"><span>{{ name }}</span><div class="skill-bar"><i style="width: {{ value / 5 * 100 }}%"></i></div><b>{{ '%.1f'|format(value) }}</b></div>{% endfor %}</section>
+      {% if ratings %}<section class="profile-panel"><div class="panel-heading"><h2>Ulasan partner</h2></div>{% for rating in ratings %}<div class="review-row"><div class="avatar small">{{ rating[0][:1].upper() }}</div><div><b>{{ rating[0] }} · {{ rating[1] }}</b><div class="stars">{{ '★' * rating[2] }}</div><p>{{ rating[3] or 'Tidak ada ulasan.' }}</p></div></div>{% endfor %}</section>{% endif %}
+      {% else %}
+      <section class="page-heading"><p class="profile-eyebrow">Riwayat pertandingan</p><h2>Perjalanan bermainmu</h2><p>Lihat hasil pertandingan, lawan, dan tempat kamu bermain.</p></section>
+      <section class="profile-panel history-panel">{% if matches %}{% for match in matches %}<div class="match-row"><div class="match-result {{ 'win' if match[3] == 'Menang' else 'loss' }}">{{ 'W' if match[3] == 'Menang' else 'L' }}</div><div><b>{{ match[3] }} vs {{ match[0] }}</b><small>{{ match[1] }} · {{ match[2] }}</small></div><strong>{{ match[4] }}</strong></div>{% endfor %}{% else %}<div class="empty-state"><span>🏸</span><h3>Belum ada riwayat pertandingan</h3><p>Gabung ke room dan mulai pertandingan pertamamu.</p><a class="button" href="{{ url_for('index') }}#rooms">Cari room</a></div>{% endif %}</section>
+      {% endif %}
+    </main>
+  </div>
+  {% endif %}
+</body>
+</html>
