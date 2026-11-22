@@ -64,11 +64,19 @@ init_database()
 @app.route("/")
 def index():
     rooms = [
-        {"title": "Fun Match Jumat Malam", "place": "GOR Cempaka, Bandung", "date": "Jumat, 21 Nov", "time": "19.00–21.00", "level": "Menengah", "price": "Rp35k", "slots": "2 slot tersisa", "tone": "purple"},
-        {"title": "Belajar Bareng Pemula", "place": "Arena Smash, Jakarta", "date": "Sabtu, 22 Nov", "time": "08.00–10.00", "level": "Pemula", "price": "Rp25k", "slots": "4 slot tersisa", "tone": "green"},
-        {"title": "Sparring Kompetitif", "place": "Prima Badminton, Depok", "date": "Minggu, 23 Nov", "time": "16.00–18.00", "level": "Jago", "price": "Rp45k", "slots": "1 slot tersisa", "tone": "orange"},
+        {"title": "Fun Match Jumat Malam", "place": "GOR Cempaka, Bandung", "date": "Jumat, 21 Nov", "date_value": "2026-11-21", "time": "19.00–21.00", "level": "Menengah", "price": "Rp35k", "slots": "2 slot tersisa", "tone": "purple"},
+        {"title": "Belajar Bareng Pemula", "place": "Arena Smash, Jakarta", "date": "Sabtu, 22 Nov", "date_value": "2026-11-22", "time": "08.00–10.00", "level": "Pemula", "price": "Rp25k", "slots": "4 slot tersisa", "tone": "green"},
+        {"title": "Sparring Kompetitif", "place": "Prima Badminton, Depok", "date": "Minggu, 23 Nov", "date_value": "2026-11-23", "time": "16.00–18.00", "level": "Jago", "price": "Rp45k", "slots": "1 slot tersisa", "tone": "orange"},
     ]
-    return render_template("index.html", rooms=rooms)
+    courts = [
+        {"name": "GOR Cempaka Badminton", "location": "Bandung", "price": "Rp80.000", "tone": "purple", "description": "Lapangan badminton nyaman untuk bermain santai, latihan rutin, dan sparring bersama komunitas.", "hours": "07.00–22.00", "facilities": "Parkir, kamar mandi, kantin, dan ruang tunggu", "courts": "1 lapangan"},
+        {"name": "Arena Smash Jakarta", "location": "Jakarta Selatan", "price": "Rp95.000", "tone": "green", "description": "Venue badminton strategis dengan suasana nyaman untuk bermain bersama teman.", "hours": "06.00–23.00", "facilities": "Parkir, kamar mandi, mushola, dan kantin", "courts": "3 lapangan"},
+        {"name": "Prima Badminton Center", "location": "Depok", "price": "Rp70.000", "tone": "orange", "description": "Lapangan pilihan untuk latihan dan pertandingan badminton komunitas.", "hours": "07.00–22.00", "facilities": "Parkir, kamar mandi, dan ruang tunggu", "courts": "2 lapangan"},
+        {"name": "GOR Satria Mandala", "location": "Bekasi", "price": "Rp65.000", "tone": "blue", "description": "GOR badminton dengan akses mudah dan area bermain yang luas.", "hours": "08.00–22.00", "facilities": "Parkir, kamar mandi, dan kantin", "courts": "4 lapangan"},
+        {"name": "Nusantara Badminton Hall", "location": "Tangerang", "price": "Rp85.000", "tone": "purple", "description": "Venue indoor untuk bermain badminton dengan keluarga, teman, atau komunitas.", "hours": "06.00–22.00", "facilities": "Parkir, kamar mandi, mushola, dan ruang tunggu", "courts": "3 lapangan"},
+        {"name": "Victory Badminton Arena", "location": "Bogor", "price": "Rp75.000", "tone": "green", "description": "Lapangan badminton dengan suasana asri dan fasilitas yang mendukung permainan.", "hours": "07.00–21.00", "facilities": "Parkir, kamar mandi, dan kantin", "courts": "2 lapangan"},
+    ]
+    return render_template("index.html", rooms=rooms, courts=courts)
 
 
 @app.post("/register")
