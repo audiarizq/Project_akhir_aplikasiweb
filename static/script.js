@@ -42,8 +42,26 @@ async function initializeFieldMap(court) {
     fieldMap = null;
   }
 
+  const showMap = (latitude, longitude, zoom, message) => {
+    fieldMap = L.map(mapElement).setView([latitude, longitude], zoom);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 19
+    }).addTo(fieldMap);
+    L.marker([latitude, longitude]).addTo(fieldMap).bindPopup(court.dataset.name).openPopup();
+    statusElement.textContent = message;
+    window.setTimeout(() => fieldMap && fieldMap.invalidateSize(), 0);
+  };
+
+  const latitude = Number(court.dataset.latitude);
+  const longitude = Number(court.dataset.longitude);
+  if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
+    showMap(latitude, longitude, 16, 'Lokasi venue berdasarkan data koordinat.');
+    return;
+  }
+
   statusElement.textContent = 'Mencari lokasi venue di OpenStreetMap...';
-  const venueQuery = `${court.dataset.name}, ${court.dataset.place}`;
+  const venueQuery = `${court.dataset.name}, ${court.dataset.address || court.dataset.place}`;
   const search = async query => {
     const params = new URLSearchParams({
       format: 'jsonv2',
@@ -69,18 +87,9 @@ async function initializeFieldMap(court) {
     }
 
     const result = results[0];
-    const latitude = Number(result.lat);
-    const longitude = Number(result.lon);
-    fieldMap = L.map(mapElement).setView([latitude, longitude], approximate ? 11 : 15);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      maxZoom: 19
-    }).addTo(fieldMap);
-    L.marker([latitude, longitude]).addTo(fieldMap).bindPopup(court.dataset.name).openPopup();
-    statusElement.textContent = approximate
+    showMap(Number(result.lat), Number(result.lon), approximate ? 11 : 15, approximate
       ? `Lokasi venue belum ditemukan secara spesifik. Menampilkan area ${court.dataset.place}.`
-      : 'Lokasi ditemukan berdasarkan data OpenStreetMap.';
-    window.setTimeout(() => fieldMap && fieldMap.invalidateSize(), 0);
+      : 'Lokasi ditemukan berdasarkan data OpenStreetMap.');
   } catch (error) {
     if (requestId === fieldMapRequest) {
       statusElement.textContent = 'Peta belum dapat dimuat. Silakan coba lagi nanti.';
@@ -156,7 +165,19 @@ function updatePageFromHash() {
   }
   const fieldDetail = document.querySelector('#field-detail');
   if (selectedCourt) {
-    fieldDetail.innerHTML = `<div class="field-gallery"><div></div><div></div><div></div></div><div class="eyebrow">Detail lapangan</div><h2>${selectedCourt.dataset.name}</h2><p class="field-detail-location">📍 ${selectedCourt.dataset.place}</p><div class="field-map-wrap"><div id="field-map-status" class="field-map-status" role="status">Mencari lokasi venue...</div><div id="field-map" class="field-map"></div></div><div class="field-detail-grid"><div><h3>Deskripsi venue</h3><p>${selectedCourt.dataset.description}</p></div><div><h3>Harga sewa</h3><strong>${selectedCourt.dataset.price}<small>/jam</small></strong></div><div><h3>Jam operasional</h3><p>${selectedCourt.dataset.hours}</p></div><div><h3>Fasilitas</h3><p>${selectedCourt.dataset.facilities}</p></div></div><div class="field-booking"><div><h3>Pilih lapangan</h3><span>${selectedCourt.dataset.courts}</span></div><label>Pilih tanggal bermain<input type="date"></label><button class="button" type="button">Lanjut pilih jam <b>↗</b></button></div>`;
+    let courtDetails = [];
+    try {
+      courtDetails = JSON.parse(selectedCourt.dataset.courtDetails || '[]');
+    } catch (error) {
+      courtDetails = [];
+    }
+    const courtList = courtDetails.length
+      ? `<ul class="court-detail-list">${courtDetails.map(court => `<li><div><strong>${court.name}</strong><span>${court.floor} · ${court.status}</span></div><b>${court.price}/jam</b></li>`).join('')}</ul>`
+      : '<p class="court-detail-empty">Detail lapangan individual belum tersedia.</p>';
+    const address = selectedCourt.dataset.address ? `<p class="field-detail-address">${selectedCourt.dataset.address}</p>` : '';
+    const mapLink = selectedCourt.dataset.googleMaps ? `<a class="field-map-link" href="${selectedCourt.dataset.googleMaps}" target="_blank" rel="noopener">Buka di Google Maps ↗</a>` : '';
+    const verification = selectedCourt.dataset.verification ? `<span class="field-verification">${selectedCourt.dataset.verification}</span>` : '';
+    fieldDetail.innerHTML = `<div class="field-gallery"><div></div><div></div><div></div></div><div class="eyebrow">Detail lapangan</div><h2>${selectedCourt.dataset.name}</h2><p class="field-detail-location">📍 ${selectedCourt.dataset.place}</p>${address}${mapLink}${verification}<div class="field-map-wrap"><div id="field-map-status" class="field-map-status" role="status">Memuat lokasi venue...</div><div id="field-map" class="field-map"></div></div><div class="field-detail-grid"><div><h3>Deskripsi venue</h3><p>${selectedCourt.dataset.description}</p></div><div><h3>Harga sewa</h3><strong>${selectedCourt.dataset.price}<small>/jam</small></strong></div><div><h3>Jam operasional</h3><p>${selectedCourt.dataset.hours}</p></div><div><h3>Fasilitas</h3><p>${selectedCourt.dataset.facilities}</p></div></div><div class="field-courts"><h3>Pilih lapangan</h3>${courtList}</div><div class="field-booking"><div><h3>Pilih tanggal</h3><span>${selectedCourt.dataset.courts}</span></div><label>Pilih tanggal bermain<input type="date"></label><button class="button" type="button">Lanjut pilih jam <b>↗</b></button></div>`;
     initializeFieldMap(selectedCourt);
   } else {
     fieldMapRequest += 1;

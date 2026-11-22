@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQ3iXb8xGQJkB7hJ4qYzM2R7f3Qf8fM=" crossorigin="">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
@@ -66,7 +66,7 @@
         <div class="container fields-content">
           <form class="fields-filter" id="fields-filter-form"><label><span>📍 Lokasi</span><input id="court-location" placeholder="Kota atau area"></label><label><span>◷ Tanggal bermain</span><input id="court-date" type="date"></label><button class="button" type="submit">Cari lapangan <b>⌕</b></button></form>
           <div class="fields-results-heading"><div><p class="eyebrow">Rekomendasi lapangan</p><h2>Lapangan di dekatmu</h2></div><span id="court-count">{{ courts|length }} lapangan tersedia</span></div>
-          <div class="court-grid" id="court-grid">{% for court in courts %}<article class="court-option" data-name="{{ court.name }}" data-location="{{ court.location|lower }}" data-place="{{ court.location }}" data-price="{{ court.price }}" data-description="{{ court.description }}" data-hours="{{ court.hours }}" data-facilities="{{ court.facilities }}" data-courts="{{ court.courts }}"><div class="court-option-image {{ court.tone }}"><span>BADMIMATE<br><b>COURT</b></span></div><div class="court-option-content"><h3>{{ court.name }}</h3><p>📍 {{ court.location }}</p><div><strong>{{ court.price }}</strong><small>/jam</small></div><a class="button button-small" href="#bikin-room/{{ court.name }}">Lihat detail <b>↗</b></a></div></article>{% endfor %}</div><div class="fields-empty" id="fields-empty">Lapangan yang sesuai belum ditemukan. Coba ubah lokasi pencarian.</div>
+          <div class="court-grid" id="court-grid">{% for court in courts %}<article class="court-option" data-name="{{ court.name }}" data-location="{{ court.location|lower }}" data-place="{{ court.location }}" data-address="{{ court.address|default('', true) }}" data-latitude="{{ court.latitude|default('', true) }}" data-longitude="{{ court.longitude|default('', true) }}" data-price="{{ court.price }}" data-description="{{ court.description }}" data-hours="{{ court.hours }}" data-facilities="{{ court.facilities }}" data-courts="{{ court.courts }}" data-google-maps="{{ court.google_maps|default('', true) }}" data-contact="{{ court.contact|default('', true) }}" data-verification="{{ court.verification|default('', true) }}" data-court-details='{{ court.court_details|tojson }}'><div class="court-option-image {{ court.tone }}"><span>BADMIMATE<br><b>COURT</b></span></div><div class="court-option-content"><h3>{{ court.name }}</h3><p>📍 {{ court.location }}</p><div><strong>{{ court.price }}</strong><small>/jam</small></div><a class="button button-small" href="#bikin-room/{{ court.name }}">Lihat detail <b>↗</b></a></div></article>{% endfor %}</div><div class="fields-empty" id="fields-empty">Lapangan yang sesuai belum ditemukan. Coba ubah lokasi pencarian.</div>
           <div class="field-detail" id="field-detail" aria-live="polite"></div>
         </div>
       </section>

@@ -1,0 +1,12 @@
+id_lapangan,id_gor,nama_lapangan,jenis_lantai,harga_per_jam_min,harga_per_jam_max,harga_paket,durasi_paket_jam,catatan_tarif,status_lapangan
+LAP-SLM-001-01,GOR-SLM-001,Lapangan 1,Standar Kompetisi,,,,,Hubungi pengelola untuk tarif sewa,Aktif
+LAP-SLM-002-01,GOR-SLM-002,Lapangan 1,Matras / Karpet,65000,70000,200000,3,Tarif reguler Rp65.000-Rp70.000/jam atau paket Rp200.000/3 jam,Aktif
+LAP-SLM-002-02,GOR-SLM-002,Lapangan 2,Matras / Karpet,65000,70000,200000,3,Tarif reguler Rp65.000-Rp70.000/jam atau paket Rp200.000/3 jam,Aktif
+LAP-SLM-002-03,GOR-SLM-002,Lapangan 3,Matras / Karpet,65000,70000,200000,3,Tarif reguler Rp65.000-Rp70.000/jam atau paket Rp200.000/3 jam,Aktif
+LAP-SLM-002-04,GOR-SLM-002,Lapangan 4,Matras / Karpet,65000,70000,200000,3,Tarif reguler Rp65.000-Rp70.000/jam atau paket Rp200.000/3 jam,Aktif
+LAP-SLM-003-01,GOR-SLM-003,Lapangan 1,Indoor Standar Nasional,50000,60000,,,Tarif reguler Rp50.000-Rp60.000/jam,Aktif
+LAP-SLM-003-02,GOR-SLM-003,Lapangan 2,Indoor Standar Nasional,50000,60000,,,Tarif reguler Rp50.000-Rp60.000/jam,Aktif
+LAP-SLM-003-03,GOR-SLM-003,Lapangan 3,Indoor Standar Nasional,50000,60000,,,Tarif reguler Rp50.000-Rp60.000/jam,Aktif
+LAP-SLM-003-04,GOR-SLM-003,Lapangan 4,Indoor Standar Nasional,50000,60000,,,Tarif reguler Rp50.000-Rp60.000/jam,Aktif
+LAP-SLM-004-01,GOR-SLM-004,Lapangan 1,,,,,,Hubungi pengelola untuk tarif sewa,Aktif
+LAP-SLM-005-01,GOR-SLM-005,Lapangan 1,,,,,,Pengelolaan warga/lokal,Aktif
